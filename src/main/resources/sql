@@ -1,0 +1,72 @@
+CREATE SEQUENCE foreign_words_sequence;
+
+CREATE TABLE foreign_words(
+	id INT DEFAULT nextval('foreign_words_sequence') PRIMARY KEY,
+	word VARCHAR NOT NULL
+);
+
+CREATE SEQUENCE russian_words_sequence;
+
+CREATE TABLE russian_words(
+	id INT DEFAULT nextval('russian_words_sequence') PRIMARY KEY,
+	word VARCHAR NOT NULL
+);
+
+CREATE TABLE foreign_russian(
+	foreign_id INTEGER REFERENCES foreign_words(id),
+	russian_id INTEGER REFERENCES russian_words(id),
+	CONSTRAINT foreign_russian_pk PRIMARY KEY(foreign_id, russian_id) 
+);
+
+CREATE SEQUENCE topics_sequence;
+
+CREATE TABLE topics (
+	id INT DEFAULT nextval('topics_sequence') PRIMARY KEY,
+	foreign_topic VARCHAR NOT NULL,
+	translation VARCHAR NOT NULL
+);
+
+CREATE TABLE foreign_topic(
+	foreign_word_id INTEGER REFERENCES foreign_words(id),
+	topic_id INTEGER REFERENCES topics(id),
+	CONSTRAINT foreign_topic_pk PRIMARY KEY(foreign_word_id, topic_id)
+);
+
+CREATE TABLE russian_topic(
+	russian_word_id INTEGER REFERENCES russian_words(id),
+	topic_id INTEGER REFERENCES topics(id),
+	CONSTRAINT russian_topic_pk PRIMARY KEY(russian_word_id, topic_id)
+);
+
+CREATE SEQUENCE users_sequence;
+
+CREATE TABLE users(
+	id INT DEFAULT nextval('users_sequence') PRIMARY KEY,
+	chat_id BIGINT NOT NULL,
+	name VARCHAR NOT NULL,
+	UNIQUE (chat_id)
+);
+
+CREATE SEQUENCE bot_activity_sequence;
+
+CREATE TABLE bot_activity(
+	id INT DEFAULT nextval('bot_activity_sequence') PRIMARY KEY,
+	user_id INTEGER REFERENCES users(id),
+	topic_id INTEGER REFERENCES topics(id),
+	foreign_word_id INTEGER REFERENCES foreign_words(id),
+	russian_word_id INTEGER REFERENCES russian_words(id),
+	created_at timestamptz DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE SEQUENCE users_reply_sequence;
+
+CREATE TABLE users_reply(
+	id INT DEFAULT nextval('users_reply_sequence') PRIMARY KEY,
+	user_id INTEGER REFERENCES users(id),
+	bot_activity_id INTEGER REFERENCES bot_activity(id),
+	reply VARCHAR,
+	skip_word BOOLEAN DEFAULT false,
+	show_answer BOOLEAN DEFAULT FALSE,
+	exercise_type INTEGER,
+	created_at timestamptz DEFAULT CURRENT_TIMESTAMP
+);
